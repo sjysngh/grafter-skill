@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>__COURSE_TITLE_PLACEHOLDER__ — Course</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0f0f0f;
+            --bg2: #161616;
+            --bg3: #1e1e1e;
+            --border: #2a2a2a;
+            --border2: #333;
+            --text: #e8e8e8;
+            --text2: #999;
+            --text3: #555;
+            --teal: #3dd68c;
+            --teal-dim: #1a3d2a;
+            --blue: #4a9eff;
+            --blue-dim: #0f2a4a;
+            --purple: #a78bfa;
+            --purple-dim: #2a1a4a;
+            --yellow: #fbbf24;
+            --yellow-dim: #3a2a0a;
+            --red: #f87171;
+        }
+
+        body {
+            font-family: 'Berkeley Mono', 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            height: 44px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 12px;
+            background: var(--bg);
+            flex-shrink: 0;
+        }
+
+        .topbar-title {
+            font-size: 12px;
+            color: var(--text2);
+            letter-spacing: 0.05em;
+        }
+
+        .topbar-title span {
+            color: var(--teal);
+        }
+
+        .topbar-nav {
+            display: flex;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .topbar-btn {
+            background: var(--bg3);
+            border: 1px solid var(--border2);
+            color: var(--text2);
+            font-family: inherit;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .topbar-btn:hover {
+            background: var(--bg2);
+            color: var(--text);
+        }
+
+        .topbar-btn:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        .stage-counter {
+            font-size: 11px;
+            color: var(--text3);
+        }
+
+        .layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 240px;
+            min-width: 240px;
+            border-right: 1px solid var(--border);
+            background: var(--bg);
+            overflow-y: auto;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .sidebar.collapsed {
+            width: 0;
+            min-width: 0;
+            overflow: hidden;
+            border-right: none;
+        }
+
+        .progress-bar-wrap {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .progress-label {
+            font-size: 11px;
+            color: var(--text3);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-label span {
+            color: var(--teal);
+        }
+
+        .progress-track {
+            height: 2px;
+            background: var(--border2);
+            border-radius: 2px;
+        }
+
+        .progress-fill {
+            height: 2px;
+            background: var(--teal);
+            border-radius: 2px;
+            transition: width 0.4s ease;
+        }
+
+        .module-group {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .module-header {
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 1;
+        }
+
+        .module-num {
+            font-size: 11px;
+            color: var(--text3);
+            min-width: 20px;
+        }
+
+        .module-name {
+            font-size: 12px;
+            color: var(--text2);
+        }
+
+        .module-tag {
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            margin-left: auto;
+        }
+
+        .stage-item {
+            padding: 5px 14px 5px 34px;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 7px;
+            border-left: 2px solid transparent;
+            transition: all 0.1s;
+        }
+
+        .stage-item:hover {
+            background: var(--bg2);
+        }
+
+        .stage-item.active {
+            border-left-color: var(--blue);
+            background: var(--blue-dim);
+        }
+
+        .stage-item.done {
+            opacity: 0.5;
+        }
+
+        .stage-num {
+            font-size: 11px;
+            color: var(--text3);
+            min-width: 20px;
+            margin-top: 1px;
+            flex-shrink: 0;
+        }
+
+        .stage-item.active .stage-num {
+            color: var(--blue);
+        }
+
+        .stage-item.done .stage-num {
+            color: var(--teal);
+        }
+
+        .stage-item.boss .stage-num {
+            color: var(--yellow);
+        }
+
+        .stage-title-sm {
+            font-size: 12px;
+            color: var(--text2);
+            line-height: 1.4;
+        }
+
+        .stage-item.active .stage-title-sm {
+            color: var(--text);
+        }
+
+        .stage-item.done .stage-title-sm {
+            text-decoration: line-through;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px 60px 60px 40px;
+        }
+
+        .stage-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 14px;
+        }
+
+        .tag-go {
+            background: var(--teal-dim);
+            color: var(--teal);
+        }
+
+        .tag-astro {
+            background: var(--purple-dim);
+            color: var(--purple);
+        }
+
+        .tag-fullstack {
+            background: var(--yellow-dim);
+            color: var(--yellow);
+        }
+
+        .tag-boss {
+            background: var(--yellow-dim);
+            color: var(--yellow);
+            border: 1px solid var(--yellow);
+        }
+
+        .tag-rust {
+            background: #2a1a0a;
+            color: #f97316;
+        }
+
+        .tag-python {
+            background: #1a2a3a;
+            color: #60a5fa;
+        }
+
+        .tag-typescript {
+            background: #1a1a3a;
+            color: #818cf8;
+        }
+
+        .stage-eyebrow {
+            font-size: 11px;
+            color: var(--text3);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .stage-heading {
+            font-size: 30px;
+            font-weight: 400;
+            color: var(--text);
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+
+        .stage-sub {
+            font-size: 15px;
+            color: var(--text2);
+            line-height: 1.7;
+            margin-bottom: 24px;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0 0 20px;
+        }
+
+        .callout {
+            border-left: 2px solid var(--blue);
+            padding: 10px 14px;
+            margin-bottom: 20px;
+            background: var(--blue-dim);
+            border-radius: 0 6px 6px 0;
+            font-size: 14px;
+            color: var(--text2);
+            line-height: 1.7;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+        }
+
+        .section-label {
+            font-size: 11px;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+
+        .obj-box {
+            background: var(--bg2);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 22px;
+            font-size: 15px;
+            color: var(--text);
+            line-height: 1.7;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+        }
+
+        .obj-box code {
+            font-family: inherit;
+            background: var(--bg3);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 13px;
+            color: var(--teal);
+            font-family: monospace;
+        }
+
+        .list {
+            list-style: none;
+            margin: 0 0 22px;
+        }
+
+        .list li {
+            font-size: 14px;
+            color: var(--text2);
+            padding: 6px 0 6px 18px;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+            line-height: 1.6;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+        }
+
+        .list li:last-child {
+            border-bottom: none;
+        }
+
+        .list li .marker {
+            position: absolute;
+            left: 0;
+            color: var(--text3);
+            font-size: 13px;
+            top: 7px;
+        }
+
+        .list li .qmark {
+            position: absolute;
+            left: 2px;
+            color: var(--blue);
+            font-weight: 600;
+            top: 6px;
+        }
+
+        .hints {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 22px;
+        }
+
+        .hint {
+            font-size: 12px;
+            font-family: monospace;
+            background: var(--bg3);
+            color: var(--text2);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border2);
+        }
+
+        .verify-box {
+            background: var(--bg2);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 22px;
+        }
+
+        .check-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 5px 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .check-row:hover .check-box {
+            border-color: var(--teal);
+        }
+
+        .check-box {
+            width: 16px;
+            height: 16px;
+            border: 1px solid var(--border2);
+            border-radius: 3px;
+            flex-shrink: 0;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            font-size: 11px;
+        }
+
+        .check-box.checked {
+            background: var(--teal);
+            border-color: var(--teal);
+            color: #000;
+        }
+
+        .check-text {
+            font-size: 14px;
+            color: var(--text2);
+            line-height: 1.5;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+        }
+
+        .check-text.checked {
+            text-decoration: line-through;
+            color: var(--text3);
+        }
+
+        .footer-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn-done {
+            background: var(--blue);
+            color: #000;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 22px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+            transition: all 0.15s;
+        }
+
+        .btn-done:hover {
+            opacity: 0.85;
+        }
+
+        .btn-done.complete {
+            background: var(--teal);
+        }
+
+        .btn-undo {
+            background: none;
+            border: 1px solid var(--border2);
+            color: var(--text3);
+            font-family: inherit;
+            font-size: 12px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-undo:hover {
+            color: var(--text2);
+            border-color: var(--border2);
+        }
+
+        .dot-row {
+            display: flex;
+            gap: 5px;
+            margin-left: auto;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--border2);
+        }
+
+        .dot.done {
+            background: var(--teal);
+        }
+
+        .dot.active {
+            background: var(--blue);
+        }
+
+        .v2-header {
+            padding: 20px 14px 8px;
+            font-size: 11px;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-top: 1px dashed var(--border2);
+        }
+
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+        .content::-webkit-scrollbar { width: 4px; }
+        .content::-webkit-scrollbar-track { background: transparent; }
+        .content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+    </style>
+</head>
+
+<body>
+
+    <div class="topbar">
+        <span class="topbar-title">build-to-<span>learn</span> / __COURSE_TITLE_PLACEHOLDER__</span>
+        <span class="stage-counter" id="stage-counter">1 / 1</span>
+        <div class="topbar-nav">
+            <button class="topbar-btn" id="btn-prev" onclick="navigate(-1)">← prev</button>
+            <button class="topbar-btn" id="btn-next" onclick="navigate(1)">next →</button>
+            <button class="topbar-btn" onclick="toggleSidebar()" style="margin-left:4px">☰</button>
+        </div>
+    </div>
+
+    <div class="layout">
+        <div class="sidebar" id="sidebar">
+            <div class="progress-bar-wrap">
+                <div class="progress-label">Progress <span id="prog-text">0%</span></div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+                </div>
+            </div>
+            <div id="sidebar-content"></div>
+        </div>
+        <div class="content" id="content"></div>
+    </div>
+
+    <script>
+        // ===== COURSE DATA =====
+        // This is replaced by the skill when generating the course.
+        // The data must be a JSON array of module objects matching the schema.
+        const COURSE = __COURSE_DATA_PLACEHOLDER__
+
+        // ===== STORAGE KEY =====
+        const STORAGE_KEY = '__STORAGE_KEY_PLACEHOLDER__'
+
+        // ===== ENGINE (do not modify below) =====
+        const allStages = COURSE.flatMap(m => m.stages.map(s => ({...s, mod: m})))
+
+        function getStorage() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') } catch (e) { return {} }
+        }
+        function saveStorage(data) {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)) } catch (e) { }
+        }
+
+        let state = {
+            current: getStorage().current || (allStages[0] ? allStages[0].id : ''),
+            completed: getStorage().completed || {},
+            checks: getStorage().checks || {},
+            sidebarOpen: true,
+        }
+
+        function save() {
+            saveStorage({ current: state.current, completed: state.completed, checks: state.checks })
+        }
+
+        function toggleSidebar() {
+            state.sidebarOpen = !state.sidebarOpen
+            document.getElementById('sidebar').classList.toggle('collapsed', !state.sidebarOpen)
+        }
+
+        function navigate(dir) {
+            const idx = allStages.findIndex(s => s.id === state.current)
+            const next = allStages[idx + dir]
+            if (next) { state.current = next.id; save(); render() }
+        }
+
+        function goTo(id) {
+            state.current = id; save(); render()
+        }
+
+        function markDone(id) {
+            state.completed[id] = true; save()
+            const idx = allStages.findIndex(s => s.id === id)
+            if (idx < allStages.length - 1) { state.current = allStages[idx + 1].id }
+            save(); render()
+        }
+
+        function undone(id) {
+            delete state.completed[id]; save(); render()
+        }
+
+        function toggleCheck(stageId, i) {
+            const key = stageId + ':' + i
+            state.checks[key] = !state.checks[key]; save()
+            const el = document.querySelector('.content')
+            const scrollTop = el.scrollTop
+            render()
+            el.scrollTop = scrollTop
+        }
+
+        function tagClass(tc) {
+            const map = {
+                go: 'tag-go', astro: 'tag-astro', fullstack: 'tag-fullstack',
+                rust: 'tag-rust', python: 'tag-python', typescript: 'tag-typescript'
+            }
+            return map[tc] || 'tag-go'
+        }
+
+        function renderSidebar() {
+            const total = allStages.length
+            const done = Object.keys(state.completed).length
+            const pct = Math.round(done / total * 100)
+            document.getElementById('prog-text').textContent = pct + '%'
+            document.getElementById('prog-fill').style.width = pct + '%'
+
+            let html = ''
+            const v1Modules = COURSE.filter(m => !m.v2)
+            const v2Modules = COURSE.filter(m => m.v2)
+
+            v1Modules.forEach(m => {
+                html += `<div class="module-group">`
+                html += `<div class="module-header">
+                    <span class="module-num">${m.num}</span>
+                    <span class="module-name">${m.title}</span>
+                    <span class="module-tag ${tagClass(m.tc)}" style="font-size:9px;padding:1px 6px;border-radius:10px;">${m.tag}</span>
+                </div>`
+                m.stages.forEach(s => {
+                    const active = s.id === state.current
+                    const done = state.completed[s.id]
+                    html += `<div class="stage-item${active ? ' active' : ''}${done ? ' done' : ''}${s.boss ? ' boss' : ''}" onclick="goTo('${s.id}')">
+                        <span class="stage-num">${done ? '✓' : s.num}</span>
+                        <span class="stage-title-sm">${s.title}</span>
+                    </div>`
+                })
+                html += `</div>`
+            })
+
+            if (v2Modules.length > 0) {
+                html += `<div class="v2-header">v2 — future modules</div>`
+                v2Modules.forEach(m => {
+                    html += `<div class="module-group">`
+                    html += `<div class="module-header">
+                        <span class="module-num">${m.num}</span>
+                        <span class="module-name">${m.title}</span>
+                        <span class="module-tag ${tagClass(m.tc)}" style="font-size:9px;padding:1px 6px;border-radius:10px;">${m.tag}</span>
+                    </div>`
+                    m.stages.forEach(s => {
+                        const active = s.id === state.current
+                        const done = state.completed[s.id]
+                        html += `<div class="stage-item${active ? ' active' : ''}${done ? ' done' : ''}${s.boss ? ' boss' : ''}" onclick="goTo('${s.id}')">
+                            <span class="stage-num">${done ? '✓' : s.num}</span>
+                            <span class="stage-title-sm">${s.title}</span>
+                        </div>`
+                    })
+                    html += `</div>`
+                })
+            }
+
+            document.getElementById('sidebar-content').innerHTML = html
+        }
+
+        function renderContent() {
+            const stage = allStages.find(s => s.id === state.current)
+            if (!stage) return
+            const idx = allStages.findIndex(s => s.id === state.current)
+            const isDone = state.completed[stage.id]
+            const mod = stage.mod
+
+            document.getElementById('stage-counter').textContent = (idx + 1) + ' / ' + allStages.length
+            document.getElementById('btn-prev').disabled = idx === 0
+            document.getElementById('btn-next').disabled = idx === allStages.length - 1
+
+            const modStages = mod.stages
+            const modIdx = modStages.findIndex(s => s.id === stage.id)
+            const dots = modStages.map((s, i) => {
+                const cls = state.completed[s.id] ? 'dot done' : s.id === stage.id ? 'dot active' : 'dot'
+                return `<div class="${cls}"></div>`
+            }).join('')
+
+            let html = ''
+
+            html += `<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">`
+            html += `<span class="stage-tag ${tagClass(mod.tc)}">Module ${mod.num} · ${mod.tag}</span>`
+            if (stage.boss) html += `<span class="stage-tag tag-boss">⬡ Boss fight</span>`
+            if (isDone) html += `<span class="stage-tag" style="background:var(--teal-dim);color:var(--teal);border:1px solid var(--teal);">✓ Complete</span>`
+            html += `</div>`
+
+            html += `<p class="stage-eyebrow">Stage ${stage.num}</p>`
+            html += `<h2 class="stage-heading">${stage.title}</h2>`
+            if (stage.sub) html += `<p class="stage-sub">${stage.sub}</p>`
+            html += `<div class="divider"></div>`
+
+            if (stage.callout) html += `<div class="callout">${stage.callout}</div>`
+
+            if (stage.obj) {
+                html += `<p class="section-label">Objective</p>`
+                html += `<div class="obj-box">${stage.obj}</div>`
+            }
+
+            if (stage.constraints?.length) {
+                html += `<p class="section-label">Constraints</p><ul class="list">`
+                stage.constraints.forEach(c => html += `<li><span class="marker">—</span>${c}</li>`)
+                html += `</ul>`
+            }
+
+            if (stage.questions?.length) {
+                html += `<p class="section-label">Questions to answer before moving on</p><ul class="list">`
+                stage.questions.forEach(q => html += `<li><span class="qmark">?</span>${q}</li>`)
+                html += `</ul>`
+            }
+
+            if (stage.hints?.length) {
+                html += `<p class="section-label">Nudges</p><div class="hints">`
+                stage.hints.forEach(h => html += `<span class="hint">${h}</span>`)
+                html += `</div>`
+            }
+
+            if (stage.verify?.length) {
+                html += `<p class="section-label">You're done when</p><div class="verify-box">`
+                stage.verify.forEach((v, i) => {
+                    const key = stage.id + ':' + i
+                    const checked = state.checks[key]
+                    html += `<div class="check-row" onclick="toggleCheck('${stage.id}', ${i})">
+                        <div class="check-box${checked ? ' checked' : ''}">${checked ? '✓' : ''}</div>
+                        <span class="check-text${checked ? ' checked' : ''}">${v}</span>
+                    </div>`
+                })
+                html += `</div>`
+            }
+
+            html += `<div class="footer-actions">`
+            if (!isDone) {
+                html += `<button class="btn-done" onclick="markDone('${stage.id}')">Mark complete →</button>`
+            } else {
+                if (idx < allStages.length - 1) {
+                    html += `<button class="btn-done complete" onclick="navigate(1)">Next stage →</button>`
+                    html += `<button class="btn-undo" onclick="undone('${stage.id}')">Undo</button>`
+                } else {
+                    html += `<span style="color:var(--teal);font-size:13px;">🎉 Course complete!</span>`
+                }
+            }
+            html += `<div class="dot-row" style="margin-left:auto;">${dots}</div>`
+            html += `<span style="font-size:11px;color:var(--text3);">${modIdx + 1} of ${modStages.length} in module ${mod.num}</span>`
+            html += `</div>`
+
+            document.getElementById('content').innerHTML = html
+            document.getElementById('content').scrollTop = 0
+        }
+
+        function render() {
+            renderSidebar()
+            renderContent()
+        }
+
+        render()
+    </script>
+</body>
+
+</html>
