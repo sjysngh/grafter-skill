@@ -130,6 +130,10 @@ If the project doesn't have enough architectural complexity to generate a meanin
 
 Don't dump all six questions at once. It should feel like a conversation, not a form.
 
+**First: figure out the intake path.** Listen to the first message and determine which scenario you're in.
+
+### Path A: Self-directed (building for themselves)
+
 1. Start with the big one: "What do you want to build?" Let them talk.
 2. Based on their answer, ask the most relevant follow-up. If it's vague, push for specificity. If it's clear, ask about the user and the stack.
 3. Probe skill level naturally: "Have you built anything like this before?" or "How comfortable are you with [the relevant technology]?"
@@ -138,3 +142,28 @@ Don't dump all six questions at once. It should feel like a conversation, not a 
 6. Confirm: summarize what you've heard and check if it's right before generating the course.
 
 The whole intake should take 3-10 messages depending on how clear the person is about what they want. Don't drag it out, but don't rush past vagueness either.
+
+### Path B: Creating a course for someone else
+
+The person talking is a senior engineer or tech lead. They're not the learner — they're defining the challenge for someone else.
+
+1. "Who's this course for? Tell me about their experience level and what they're currently comfortable with."
+2. "What do you want them to build?" — push for the same specificity as self-directed. The project needs to be real, not a make-work exercise.
+3. "What should they learn from building this?" — this is the key question. The senior knows what the codebase demands. Extract specific learning objectives: "I want them to understand our event bus, how we handle idempotency, and why we chose X over Y."
+4. "What does the existing codebase look like?" — get context on the system the junior will be building inside. Patterns, conventions, services they'll interact with, things that are easy to get wrong.
+5. "Where on the learning-to-shipping spectrum should this land?" — is this primarily about the junior learning, or do they also need to ship this feature? If shipping matters, the course should be less pedagogically strict and more velocity-focused.
+6. "How much support will they have from you?" — if the senior is available for questions, the course can be more challenging. If the junior is mostly on their own, the course needs more scaffolding.
+
+The course should respect the existing codebase's patterns. If the team uses dependency injection, the course teaches through dependency injection. If they have specific error handling conventions, constraints should enforce them. The junior learns the team's way of doing things, not an abstract best practice that doesn't match what they'll see in the real code.
+
+### Path C: Senior exploring a new domain
+
+The person is experienced but entering unfamiliar territory — a new technology, a new architectural pattern, cutting-edge research applied to engineering.
+
+1. "What do you want to build with this?" — same push for specificity, but the project might be more experimental or proof-of-concept.
+2. "What's the new domain?" — WebAssembly, CRDTs, eBPF, a new framework, whatever. Understand what they're exploring.
+3. "What do you already know well?" — identify their strengths. If they're a Go expert learning WASM, the course skips all Go instruction and focuses on the WASM concepts, with Go as the implementation language they're comfortable in.
+4. "Where are the gaps you're aware of?" — they often know what they don't know. "I understand distributed systems but I've never implemented consensus" is a clear gap statement.
+5. "What's the goal — understanding the concepts, or shipping something production-ready?" — this sets the spectrum. Exploration mode is more about understanding, shipping mode is about building something robust.
+
+For this path, the course structure often looks different: earlier stages might be more conceptual (build a toy version that demonstrates the core concept), middle stages apply it to the real project, and later stages deal with the production concerns (edge cases, failure modes, performance). The two-pass pattern is especially valuable here: implement the concept from scratch first, then use the production library.

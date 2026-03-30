@@ -120,3 +120,29 @@ The final module is always about deployment and real usage. The project isn't do
 This is the ultimate test and the ultimate motivator. Everything in the course builds toward this: "Someone you've never met uses the thing you built, and it works."
 
 For tutorial hell survivors, this might be the first thing they've ever deployed. That's a transformative experience, and the course should treat it as such. The final boss fight should be the biggest celebration in the course.
+
+## Principle 11: Respect the existing codebase
+
+When a course is built inside an existing codebase — which is the norm for team training and onboarding — the course teaches the codebase's patterns, not abstract best practices. If the team uses repository pattern, the course teaches through repository pattern. If they have specific error handling conventions, logging standards, or testing approaches, constraints enforce those.
+
+This means the course generation needs to understand the existing system:
+- What patterns and conventions does the codebase follow?
+- What services or modules will the new code interact with?
+- What are the common pitfalls in this specific codebase?
+- What does the team's code review care about?
+
+The "sub" field for stages in a codebase-aware course should reference real files, real services, and real patterns: "The event bus in `internal/events/bus.go` uses a fan-out pattern. Your notification service needs to subscribe to payment events and handle them idempotently — look at how `internal/billing/handler.go` does it for reference, then build yours."
+
+Constraints should enforce team conventions: "Follow the error wrapping pattern used in the rest of the codebase — `fmt.Errorf('notification: %w', err)`." This teaches the junior not just how to code, but how to code *here*.
+
+## Principle 12: Concepts before integration in exploration mode
+
+When an experienced engineer is exploring a new domain, the course structure inverts slightly. Instead of building the full product incrementally, the early stages isolate the new concepts:
+
+1. **Concept stages:** Build a minimal, throwaway implementation that demonstrates the core concept. A toy CRDT. A hello-world WASM module. A basic eBPF probe. The goal is understanding, not production code.
+2. **Application stages:** Apply the concept to the real project. Now you know how CRDTs work in theory — wire one into your actual data sync layer.
+3. **Production stages:** Handle the hard edges. Failure modes, performance, edge cases, monitoring. The stuff that separates "I understand this" from "I can run this in production."
+
+The two-pass pattern is especially powerful here. The concept stage IS the first pass — raw, manual, understanding the internals. The application stage is the second pass — now use the production library, knowing what it does underneath.
+
+Questions in exploration mode should be deeper and more conceptual than in other modes. Not "how do you call this function" but "what are the tradeoffs between state-based and operation-based CRDTs for your use case, and why?" The person is here to build judgment in a new domain, not just make code work.
