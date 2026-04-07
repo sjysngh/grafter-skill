@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>__COURSE_TITLE_PLACEHOLDER__ — Course</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0f0f0f;
+            --bg2: #161616;
+            --bg3: #1e1e1e;
+            --border: #2a2a2a;
+            --border2: #333;
+            --text: #e8e8e8;
+            --text2: #999;
+            --text3: #555;
+            --teal: #3dd68c;
+            --teal-dim: #1a3d2a;
+            --blue: #4a9eff;
+            --blue-dim: #0f2a4a;
+            --purple: #a78bfa;
+            --purple-dim: #2a1a4a;
+            --yellow: #fbbf24;
+            --yellow-dim: #3a2a0a;
+            --red: #f87171;
+            --orange: #f97316;
+            --orange-dim: #2a1a0a;
+        }
+
+        body {
+            font-family: 'Berkeley Mono', 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            height: 44px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 12px;
+            background: var(--bg);
+            flex-shrink: 0;
+        }
+
+        .topbar-title {
+            font-size: 12px;
+            color: var(--text2);
+            letter-spacing: 0.05em;
+        }
+
+        .topbar-title span {
+            color: var(--teal);
+        }
+
+        .topbar-nav {
+            display: flex;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .topbar-btn {
+            background: var(--bg3);
+            border: 1px solid var(--border2);
+            color: var(--text2);
+            font-family: inherit;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .topbar-btn:hover {
+            background: var(--bg2);
+            color: var(--text);
+        }
+
+        .topbar-btn:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        .topbar-btn.active-toggle {
+            background: var(--orange-dim);
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+
+        .stage-counter {
+            font-size: 11px;
+            color: var(--text3);
+        }
+
+        .layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ===== LEFT SIDEBAR ===== */
+        .sidebar {
+            width: 240px;
+            min-width: 240px;
+            border-right: 1px solid var(--border);
+            background: var(--bg);
+            overflow-y: auto;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .sidebar.collapsed {
+            width: 0;
+            min-width: 0;
+            overflow: hidden;
+            border-right: none;
+        }
+
+        .progress-bar-wrap {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .progress-label {
+            font-size: 11px;
+            color: var(--text3);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-label span {
+            color: var(--teal);
+        }
+
+        .progress-track {
+            height: 2px;
+            background: var(--border2);
+            border-radius: 2px;
+        }
+
+        .progress-fill {
+            height: 2px;
+            background: var(--teal);
+            border-radius: 2px;
+            transition: width 0.4s ease;
+        }
+
+        .module-group {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .module-header {
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 1;
+        }
+
+        .module-num {
+            font-size: 11px;
+            color: var(--text3);
+            min-width: 20px;
+        }
+
+        .module-name {
+            font-size: 12px;
+            color: var(--text2);
+        }
+
+        .module-tag {
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            margin-left: auto;
+        }
+
+        .stage-item {
+            padding: 5px 14px 5px 34px;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 7px;
+            border-left: 2px solid transparent;
+            transition: all 0.1s;
+        }
+
+        .stage-item:hover {
+            background: var(--bg2);
+        }
+
+        .stage-item.active {
+            border-left-color: var(--blue);
+            background: var(--blue-dim);
+        }
+
+        .stage-item.done {
+            opacity: 0.5;
+        }
+
+        .stage-num {
+            font-size: 11px;
+            color: var(--text3);
+            min-width: 20px;
+            margin-top: 1px;
+            flex-shrink: 0;
+        }
+
+        .stage-item.active .stage-num {
+            color: var(--blue);
+        }
+
+        .stage-item.done .stage-num {
+            color: var(--teal);
+        }
+
+        .stage-item.boss .stage-num {
+            color: var(--yellow);
+        }
+
+        .stage-title-sm {
+            font-size: 12px;
+            color: var(--text2);
+            line-height: 1.4;
+        }
+
+        .stage-item.active .stage-title-sm {
+            color: var(--text);
+        }
+
+        .stage-item.done .stage-title-sm {
+            text-decoration: line-through;
+        }
+
+        /* ===== SIDEBAR OVERVIEW LINK ===== */
+        .overview-link {
+            padding: 8px 14px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text2);
+            border-bottom: 1px solid var(--border);
+            border-left: 2px solid transparent;
+            transition: all 0.1s;
+        }
+
+        .overview-link:hover {
+            background: var(--bg2);
+        }
+
+        .overview-link.active {
+            border-left-color: var(--blue);
+            background: var(--blue-dim);
+            color: var(--text);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px 60px 60px 40px;
+        }
+
+        .stage-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 14px;
+        }
+
+        .tag-go {
+            background: var(--teal-dim);
+            color: var(--teal);
+        }
+
+        .tag-astro {
+            background: var(--purple-dim);
+            color: var(--purple);
+        }
+
+        .tag-fullstack {
+            background: var(--yellow-dim);
+            color: var(--yellow);
+        }
+
+        .tag-boss {
+            background: var(--yellow-dim);
+            color: var(--yellow);
+            border: 1px solid var(--yellow);
+        }
+
+        .tag-rust {
+            background: #2a1a0a;
+            color: #f97316;
+        }
+
+        .tag-python {
+            background: #1a2a3a;
+            color: #60a5fa;
+        }
+
+        .tag-typescript {
+            background: #1a1a3a;
+            color: #818cf8;
+        }
+
+        .stage-eyebrow {
+            font-size: 11px;
+            color: var(--text3);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .stage-heading {
+            font-size: 30px;
+            font-weight: 400;
+            color: var(--text);
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+
+        .stage-sub {
+            font-size: 15px;
+            color: var(--text2);
+            line-height: 1.7;
+            margin-bottom: 24px;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0 0 20px;
+        }
+
+        .callout {
+            border-left: 2px solid var(--blue);
+            padding: 10px 14px;
+            margin-bottom: 20px;
+            background: var(--blue-dim);
+            border-radius: 0 6px 6px 0;
+            font-size: 14px;
+            color: var(--text2);
+            line-height: 1.7;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+        }
+
+        .section-label {
+            font-size: 11px;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+
+        .obj-box {
+            background: var(--bg2);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 22px;
+            font-size: 15px;
+            color: var(--text);
+            line-height: 1.7;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+        }
+
+        .obj-box code {
+            font-family: inherit;
+            background: var(--bg3);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 13px;
+            color: var(--teal);
+            font-family: monospace;
+        }
+
+        .list {
+            list-style: none;
+            margin: 0 0 22px;
+        }
+
+        .list li {
+            font-size: 14px;
+            color: var(--text2);
+            padding: 6px 0 6px 18px;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+            line-height: 1.6;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+        }
+
+        .list li:last-child {
+            border-bottom: none;
+        }
+
+        .list li .marker {
+            position: absolute;
+            left: 0;
+            color: var(--text3);
+            font-size: 13px;
+            top: 7px;
+        }
+
+        .list li .qmark {
+            position: absolute;
+            left: 2px;
+            color: var(--blue);
+            font-weight: 600;
+            top: 6px;
+        }
+
+        .list li .dmark {
+            position: absolute;
+            left: 0px;
+            color: var(--orange);
+            font-weight: 600;
+            top: 6px;
+            font-size: 13px;
+        }
+
+        .hints {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 22px;
+        }
+
+        .hint {
+            font-size: 12px;
+            font-family: monospace;
+            background: var(--bg3);
+            color: var(--text2);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border2);
+        }
+
+        .verify-box {
+            background: var(--bg2);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 22px;
+        }
+
+        .check-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 5px 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .check-row:hover .check-box {
+            border-color: var(--teal);
+        }
+
+        .check-box {
+            width: 16px;
+            height: 16px;
+            border: 1px solid var(--border2);
+            border-radius: 3px;
+            flex-shrink: 0;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            font-size: 11px;
+        }
+
+        .check-box.checked {
+            background: var(--teal);
+            border-color: var(--teal);
+            color: #000;
+        }
+
+        .check-text {
+            font-size: 14px;
+            color: var(--text2);
+            line-height: 1.5;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+        }
+
+        .check-text.checked {
+            text-decoration: line-through;
+            color: var(--text3);
+        }
+
+        .footer-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn-done {
+            background: var(--blue);
+            color: #000;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 22px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+            transition: all 0.15s;
+        }
+
+        .btn-done:hover {
+            opacity: 0.85;
+        }
+
+        .btn-done.complete {
+            background: var(--teal);
+        }
+
+        .btn-undo {
+            background: none;
+            border: 1px solid var(--border2);
+            color: var(--text3);
+            font-family: inherit;
+            font-size: 12px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-undo:hover {
+            color: var(--text2);
+            border-color: var(--border2);
+        }
+
+        .dot-row {
+            display: flex;
+            gap: 5px;
+            margin-left: auto;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--border2);
+        }
+
+        .dot.done {
+            background: var(--teal);
+        }
+
+        .dot.active {
+            background: var(--blue);
+        }
+
+        .v2-header {
+            padding: 20px 14px 8px;
+            font-size: 11px;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-top: 1px dashed var(--border2);
+        }
+
+        /* ===== OVERVIEW PAGE ===== */
+        .overview {
+            max-width: 640px;
+        }
+
+        .overview h1 {
+            font-size: 36px;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .overview .meta-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .overview .summary {
+            font-size: 16px;
+            color: var(--text2);
+            line-height: 1.8;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+            margin-bottom: 24px;
+        }
+
+        .overview .meta-row {
+            font-size: 13px;
+            color: var(--text2);
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+            line-height: 1.6;
+        }
+
+        .overview .meta-label {
+            font-family: inherit;
+            color: var(--text3);
+            min-width: 80px;
+            flex-shrink: 0;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding-top: 2px;
+        }
+
+        .overview .module-list {
+            margin-top: 28px;
+        }
+
+        .overview .module-list h3 {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+        }
+
+        .overview .module-card {
+            background: var(--bg2);
+            border: 1px solid var(--border2);
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .overview .module-card:hover {
+            border-color: var(--text3);
+        }
+
+        .overview .module-card .mc-num {
+            font-size: 11px;
+            color: var(--text3);
+        }
+
+        .overview .module-card .mc-title {
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .overview .module-card .mc-stages {
+            font-size: 11px;
+            color: var(--text3);
+            margin-left: auto;
+        }
+
+        /* ===== CLIPPER PANEL (right sidebar) ===== */
+        .clipper {
+            width: 300px;
+            min-width: 300px;
+            border-left: 1px solid var(--border);
+            background: var(--bg);
+            overflow-y: auto;
+            flex-shrink: 0;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .clipper.collapsed {
+            width: 0;
+            min-width: 0;
+            overflow: hidden;
+            border-left: none;
+        }
+
+        .clipper-header {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .clipper-title {
+            font-size: 11px;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .clipper-count {
+            font-size: 10px;
+            color: var(--orange);
+            background: var(--orange-dim);
+            padding: 1px 6px;
+            border-radius: 10px;
+        }
+
+        .clipper-actions {
+            display: flex;
+            gap: 4px;
+            margin-left: auto;
+        }
+
+        .clipper-btn {
+            background: var(--bg3);
+            border: 1px solid var(--border2);
+            color: var(--text2);
+            font-family: inherit;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .clipper-btn:hover {
+            background: var(--bg2);
+            color: var(--text);
+        }
+
+        .clipper-btn.primary {
+            background: var(--orange-dim);
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+
+        .clipper-btn.primary:hover {
+            opacity: 0.85;
+        }
+
+        .clipper-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .clipper-empty {
+            padding: 20px 14px;
+            font-size: 12px;
+            color: var(--text3);
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .clip-item {
+            padding: 8px 14px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .clip-item:hover {
+            background: var(--bg2);
+        }
+
+        .clip-context {
+            font-size: 10px;
+            color: var(--text3);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .clip-text {
+            font-size: 12px;
+            color: var(--text2);
+            line-height: 1.5;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+        }
+
+        .clip-delete {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: var(--text3);
+            cursor: pointer;
+            font-size: 12px;
+            padding: 2px 4px;
+            border-radius: 2px;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+
+        .clip-item:hover .clip-delete {
+            opacity: 1;
+        }
+
+        .clip-delete:hover {
+            color: var(--red);
+        }
+
+        /* ===== FLOATING ADD BUTTON ===== */
+        .clip-add-btn {
+            position: fixed;
+            display: none;
+            background: var(--orange);
+            color: #000;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+
+        .clip-add-btn:hover {
+            opacity: 0.85;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg3);
+            border: 1px solid var(--border2);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 12px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            z-index: 200;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.2s;
+            pointer-events: none;
+        }
+
+        .toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== SCROLLBARS ===== */
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+        .content::-webkit-scrollbar { width: 4px; }
+        .content::-webkit-scrollbar-track { background: transparent; }
+        .content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+        .clipper::-webkit-scrollbar { width: 4px; }
+        .clipper::-webkit-scrollbar-track { background: transparent; }
+        .clipper::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+        .clipper-items::-webkit-scrollbar { width: 4px; }
+        .clipper-items::-webkit-scrollbar-track { background: transparent; }
+        .clipper-items::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+    </style>
+</head>
+
+<body>
+
+    <div class="topbar">
+        <span class="topbar-title"><span>grafter</span> / __COURSE_TITLE_PLACEHOLDER__</span>
+        <span class="stage-counter" id="stage-counter">1 / 1</span>
+        <div class="topbar-nav">
+            <button class="topbar-btn" id="btn-prev" onclick="navigate(-1)">← prev</button>
+            <button class="topbar-btn" id="btn-next" onclick="navigate(1)">next →</button>
+            <button class="topbar-btn" onclick="toggleSidebar()" style="margin-left:4px">☰</button>
+            <button class="topbar-btn" id="btn-clipper" onclick="toggleClipper()">clipper</button>
+        </div>
+    </div>
+
+    <div class="layout">
+        <div class="sidebar" id="sidebar">
+            <div class="progress-bar-wrap">
+                <div class="progress-label">Progress <span id="prog-text">0%</span></div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+                </div>
+            </div>
+            <div class="overview-link" id="overview-link" onclick="goToOverview()">Overview</div>
+            <div id="sidebar-content"></div>
+        </div>
+        <div class="content" id="content"></div>
+        <div class="clipper collapsed" id="clipper">
+            <div class="clipper-header">
+                <span class="clipper-title">Clipper</span>
+                <span class="clipper-count" id="clip-count">0</span>
+                <div class="clipper-actions">
+                    <button class="clipper-btn" onclick="clearClips()">clear</button>
+                    <button class="clipper-btn" onclick="copyClips()">copy all</button>
+                    <button class="clipper-btn primary" onclick="exportPrompt()">export prompt</button>
+                </div>
+            </div>
+            <div class="clipper-items" id="clip-items"></div>
+        </div>
+    </div>
+
+    <button class="clip-add-btn" id="clip-add-btn" onmousedown="addSelection(event)">+ clip</button>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ===== COURSE DATA =====
+        const COURSE_RAW = __COURSE_DATA_PLACEHOLDER__
+
+        // Support both old (bare array) and new (object with meta+modules) schema
+        const META = COURSE_RAW.meta || { title: '__COURSE_TITLE_PLACEHOLDER__', summary: '', for: '', mode: 'learn', level: '' }
+        const MODULES = COURSE_RAW.modules || COURSE_RAW
+        const MODE = META.mode || 'learn'
+
+        // Mode-aware labels
+        const LABELS = {
+            learn:  { questions: 'Questions to answer before moving on', hints: 'Nudges', qmark: '?', qclass: 'qmark' },
+            build:  { questions: 'Decisions to make', hints: 'References', qmark: '◆', qclass: 'dmark' },
+            train:  { questions: 'Questions to answer before moving on', hints: 'Codebase pointers', qmark: '?', qclass: 'qmark' },
+        }
+        const L = LABELS[MODE] || LABELS.learn
+
+        // ===== STORAGE KEY =====
+        const STORAGE_KEY = '__STORAGE_KEY_PLACEHOLDER__'
+        const CLIP_STORAGE_KEY = STORAGE_KEY + ':clips'
+
+        // ===== ENGINE =====
+        const allStages = MODULES.flatMap(m => m.stages.map(s => ({...s, mod: m})))
+
+        function getStorage() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') } catch (e) { return {} }
+        }
+        function saveStorage(data) {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)) } catch (e) { }
+        }
+
+        let state = {
+            current: getStorage().current || '__overview__',
+            completed: getStorage().completed || {},
+            checks: getStorage().checks || {},
+            sidebarOpen: true,
+            clipperOpen: false,
+        }
+
+        // Start on overview if first visit
+        if (!getStorage().current) state.current = '__overview__'
+
+        function save() {
+            saveStorage({ current: state.current, completed: state.completed, checks: state.checks })
+        }
+
+        function toggleSidebar() {
+            state.sidebarOpen = !state.sidebarOpen
+            document.getElementById('sidebar').classList.toggle('collapsed', !state.sidebarOpen)
+        }
+
+        function toggleClipper() {
+            state.clipperOpen = !state.clipperOpen
+            document.getElementById('clipper').classList.toggle('collapsed', !state.clipperOpen)
+            document.getElementById('btn-clipper').classList.toggle('active-toggle', state.clipperOpen)
+            renderClips()
+        }
+
+        function navigate(dir) {
+            if (state.current === '__overview__') {
+                if (dir === 1 && allStages.length > 0) { state.current = allStages[0].id; save(); render() }
+                return
+            }
+            const idx = allStages.findIndex(s => s.id === state.current)
+            const next = allStages[idx + dir]
+            if (next) { state.current = next.id; save(); render() }
+        }
+
+        function goTo(id) {
+            state.current = id; save(); render()
+        }
+
+        function goToOverview() {
+            state.current = '__overview__'; save(); render()
+        }
+
+        function markDone(id) {
+            state.completed[id] = true; save()
+            const idx = allStages.findIndex(s => s.id === id)
+            if (idx < allStages.length - 1) { state.current = allStages[idx + 1].id }
+            save(); render()
+        }
+
+        function undone(id) {
+            delete state.completed[id]; save(); render()
+        }
+
+        function toggleCheck(stageId, i) {
+            const key = stageId + ':' + i
+            state.checks[key] = !state.checks[key]; save()
+            const el = document.querySelector('.content')
+            const scrollTop = el.scrollTop
+            render()
+            el.scrollTop = scrollTop
+        }
+
+        function tagClass(tc) {
+            const map = {
+                go: 'tag-go', astro: 'tag-astro', fullstack: 'tag-fullstack',
+                rust: 'tag-rust', python: 'tag-python', typescript: 'tag-typescript'
+            }
+            return map[tc] || 'tag-go'
+        }
+
+        // ===== RENDER: SIDEBAR =====
+        function renderSidebar() {
+            const total = allStages.length
+            const done = Object.keys(state.completed).length
+            const pct = total > 0 ? Math.round(done / total * 100) : 0
+            document.getElementById('prog-text').textContent = pct + '%'
+            document.getElementById('prog-fill').style.width = pct + '%'
+
+            document.getElementById('overview-link').classList.toggle('active', state.current === '__overview__')
+
+            let html = ''
+            const v1Modules = MODULES.filter(m => !m.v2)
+            const v2Modules = MODULES.filter(m => m.v2)
+
+            v1Modules.forEach(m => {
+                html += `<div class="module-group">`
+                html += `<div class="module-header">
+                    <span class="module-num">${m.num}</span>
+                    <span class="module-name">${m.title}</span>
+                    <span class="module-tag ${tagClass(m.tc)}" style="font-size:9px;padding:1px 6px;border-radius:10px;">${m.tag}</span>
+                </div>`
+                m.stages.forEach(s => {
+                    const active = s.id === state.current
+                    const done = state.completed[s.id]
+                    html += `<div class="stage-item${active ? ' active' : ''}${done ? ' done' : ''}${s.boss ? ' boss' : ''}" onclick="goTo('${s.id}')">
+                        <span class="stage-num">${done ? '✓' : s.num}</span>
+                        <span class="stage-title-sm">${s.title}</span>
+                    </div>`
+                })
+                html += `</div>`
+            })
+
+            if (v2Modules.length > 0) {
+                html += `<div class="v2-header">v2 — future modules</div>`
+                v2Modules.forEach(m => {
+                    html += `<div class="module-group">`
+                    html += `<div class="module-header">
+                        <span class="module-num">${m.num}</span>
+                        <span class="module-name">${m.title}</span>
+                        <span class="module-tag ${tagClass(m.tc)}" style="font-size:9px;padding:1px 6px;border-radius:10px;">${m.tag}</span>
+                    </div>`
+                    m.stages.forEach(s => {
+                        const active = s.id === state.current
+                        const done = state.completed[s.id]
+                        html += `<div class="stage-item${active ? ' active' : ''}${done ? ' done' : ''}${s.boss ? ' boss' : ''}" onclick="goTo('${s.id}')">
+                            <span class="stage-num">${done ? '✓' : s.num}</span>
+                            <span class="stage-title-sm">${s.title}</span>
+                        </div>`
+                    })
+                    html += `</div>`
+                })
+            }
+
+            document.getElementById('sidebar-content').innerHTML = html
+        }
+
+        // ===== RENDER: OVERVIEW =====
+        function renderOverview() {
+            document.getElementById('stage-counter').textContent = MODULES.length + ' modules · ' + allStages.length + ' stages'
+            document.getElementById('btn-prev').disabled = true
+            document.getElementById('btn-next').disabled = allStages.length === 0
+
+            const modeLabel = { learn: 'Learn', build: 'Build', train: 'Train' }[MODE] || MODE
+            const modeColor = { learn: 'var(--teal)', build: 'var(--orange)', train: 'var(--purple)' }[MODE] || 'var(--text2)'
+            const modeBg = { learn: 'var(--teal-dim)', build: 'var(--orange-dim)', train: 'var(--purple-dim)' }[MODE] || 'var(--bg3)'
+
+            let html = '<div class="overview">'
+
+            html += `<div class="meta-tags">`
+            html += `<span class="stage-tag" style="background:${modeBg};color:${modeColor}">${modeLabel} mode</span>`
+            if (META.level) html += `<span class="stage-tag" style="background:var(--bg3);color:var(--text2)">${META.level}</span>`
+            html += `</div>`
+
+            html += `<h1 class="stage-heading" style="font-size:36px;margin-bottom:8px;">${META.title || '__COURSE_TITLE_PLACEHOLDER__'}</h1>`
+
+            if (META.summary) html += `<p class="summary" style="font-size:16px;color:var(--text2);line-height:1.8;font-family:ui-sans-serif,system-ui,sans-serif;margin-bottom:24px;">${META.summary}</p>`
+
+            html += `<div class="divider"></div>`
+
+            if (META.for) {
+                html += `<div class="meta-row"><span class="meta-label">Built for</span><span>${META.for}</span></div>`
+            }
+
+            html += `<div class="meta-row"><span class="meta-label">Modules</span><span>${MODULES.filter(m => !m.v2).length} active${MODULES.filter(m => m.v2).length ? ', ' + MODULES.filter(m => m.v2).length + ' deferred to v2' : ''}</span></div>`
+            html += `<div class="meta-row"><span class="meta-label">Stages</span><span>${allStages.length} total, ${allStages.filter(s => s.boss).length} boss fights</span></div>`
+
+            html += `<div class="module-list">`
+            html += `<h3>Modules</h3>`
+            MODULES.filter(m => !m.v2).forEach(m => {
+                const firstStage = m.stages[0]
+                html += `<div class="module-card" onclick="goTo('${firstStage ? firstStage.id : ''}')">
+                    <span class="mc-num">${m.num}</span>
+                    <span class="mc-title">${m.title}</span>
+                    <span class="mc-stages">${m.stages.length} stages</span>
+                </div>`
+            })
+
+            if (MODULES.filter(m => m.v2).length > 0) {
+                html += `<h3 style="margin-top:20px;color:var(--text3);">v2 — future</h3>`
+                MODULES.filter(m => m.v2).forEach(m => {
+                    html += `<div class="module-card" style="opacity:0.5">
+                        <span class="mc-num">${m.num}</span>
+                        <span class="mc-title">${m.title}</span>
+                        <span class="mc-stages">${m.stages.length} stages</span>
+                    </div>`
+                })
+            }
+
+            html += `</div></div>`
+
+            document.getElementById('content').innerHTML = html
+            document.getElementById('content').scrollTop = 0
+        }
+
+        // ===== RENDER: STAGE CONTENT =====
+        function renderStageContent() {
+            const stage = allStages.find(s => s.id === state.current)
+            if (!stage) return
+            const idx = allStages.findIndex(s => s.id === state.current)
+            const isDone = state.completed[stage.id]
+            const mod = stage.mod
+
+            document.getElementById('stage-counter').textContent = (idx + 1) + ' / ' + allStages.length
+            document.getElementById('btn-prev').disabled = idx === 0 && state.current !== '__overview__'
+            document.getElementById('btn-next').disabled = idx === allStages.length - 1
+
+            const modStages = mod.stages
+            const modIdx = modStages.findIndex(s => s.id === stage.id)
+            const dots = modStages.map((s, i) => {
+                const cls = state.completed[s.id] ? 'dot done' : s.id === stage.id ? 'dot active' : 'dot'
+                return `<div class="${cls}"></div>`
+            }).join('')
+
+            let html = ''
+
+            html += `<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">`
+            html += `<span class="stage-tag ${tagClass(mod.tc)}">Module ${mod.num} · ${mod.tag}</span>`
+            if (stage.boss) html += `<span class="stage-tag tag-boss">⬡ Boss fight</span>`
+            if (isDone) html += `<span class="stage-tag" style="background:var(--teal-dim);color:var(--teal);border:1px solid var(--teal);">✓ Complete</span>`
+            html += `</div>`
+
+            html += `<p class="stage-eyebrow">Stage ${stage.num}</p>`
+            html += `<h2 class="stage-heading">${stage.title}</h2>`
+            if (stage.sub) html += `<p class="stage-sub">${stage.sub}</p>`
+            html += `<div class="divider"></div>`
+
+            if (stage.callout) html += `<div class="callout">${stage.callout}</div>`
+
+            if (stage.obj) {
+                html += `<p class="section-label">Objective</p>`
+                html += `<div class="obj-box" data-field="obj">${stage.obj}</div>`
+            }
+
+            if (stage.constraints?.length) {
+                html += `<p class="section-label">Constraints</p><ul class="list" data-field="constraints">`
+                stage.constraints.forEach(c => html += `<li><span class="marker">—</span>${c}</li>`)
+                html += `</ul>`
+            }
+
+            if (stage.questions?.length) {
+                html += `<p class="section-label">${L.questions}</p><ul class="list" data-field="questions">`
+                stage.questions.forEach(q => html += `<li><span class="${L.qclass}">${L.qmark}</span>${q}</li>`)
+                html += `</ul>`
+            }
+
+            if (stage.hints?.length) {
+                html += `<p class="section-label">${L.hints}</p><div class="hints" data-field="hints">`
+                stage.hints.forEach(h => html += `<span class="hint">${h}</span>`)
+                html += `</div>`
+            }
+
+            if (stage.verify?.length) {
+                html += `<p class="section-label">${MODE === 'build' ? 'Definition of done' : "You're done when"}</p><div class="verify-box" data-field="verify">`
+                stage.verify.forEach((v, i) => {
+                    const key = stage.id + ':' + i
+                    const checked = state.checks[key]
+                    html += `<div class="check-row" onclick="toggleCheck('${stage.id}', ${i})">
+                        <div class="check-box${checked ? ' checked' : ''}">${checked ? '✓' : ''}</div>
+                        <span class="check-text${checked ? ' checked' : ''}">${v}</span>
+                    </div>`
+                })
+                html += `</div>`
+            }
+
+            html += `<div class="footer-actions">`
+            if (!isDone) {
+                html += `<button class="btn-done" onclick="markDone('${stage.id}')">Mark complete →</button>`
+            } else {
+                if (idx < allStages.length - 1) {
+                    html += `<button class="btn-done complete" onclick="navigate(1)">Next stage →</button>`
+                    html += `<button class="btn-undo" onclick="undone('${stage.id}')">Undo</button>`
+                } else {
+                    html += `<span style="color:var(--teal);font-size:13px;">Course complete!</span>`
+                }
+            }
+            html += `<div class="dot-row" style="margin-left:auto;">${dots}</div>`
+            html += `<span style="font-size:11px;color:var(--text3);">${modIdx + 1} of ${modStages.length} in module ${mod.num}</span>`
+            html += `</div>`
+
+            document.getElementById('content').innerHTML = html
+            document.getElementById('content').scrollTop = 0
+        }
+
+        function renderContent() {
+            if (state.current === '__overview__') {
+                renderOverview()
+            } else {
+                renderStageContent()
+            }
+        }
+
+        function render() {
+            renderSidebar()
+            renderContent()
+            renderClips()
+        }
+
+        // ===== CLIPPER =====
+        function getClips() {
+            try { return JSON.parse(localStorage.getItem(CLIP_STORAGE_KEY) || '[]') } catch (e) { return [] }
+        }
+        function saveClips(clips) {
+            try { localStorage.setItem(CLIP_STORAGE_KEY, JSON.stringify(clips)) } catch (e) { }
+        }
+
+        function renderClips() {
+            const clips = getClips()
+            document.getElementById('clip-count').textContent = clips.length
+
+            if (clips.length === 0) {
+                document.getElementById('clip-items').innerHTML = '<div class="clipper-empty">Highlight text in the course and click "+ clip" to add items here.<br><br>Use "export prompt" to generate a structured prompt for grafter-build.</div>'
+                return
+            }
+
+            let html = ''
+            clips.forEach((clip, i) => {
+                html += `<div class="clip-item">
+                    <button class="clip-delete" onclick="deleteClip(${i})">×</button>
+                    <div class="clip-context">${clip.context}</div>
+                    <div class="clip-text">${clip.text}</div>
+                </div>`
+            })
+            document.getElementById('clip-items').innerHTML = html
+        }
+
+        function deleteClip(index) {
+            const clips = getClips()
+            clips.splice(index, 1)
+            saveClips(clips)
+            renderClips()
+        }
+
+        function clearClips() {
+            saveClips([])
+            renderClips()
+            showToast('Clips cleared')
+        }
+
+        function copyClips() {
+            const clips = getClips()
+            if (clips.length === 0) return
+            const text = clips.map(c => `[${c.context}]\n${c.text}`).join('\n\n')
+            navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard'))
+        }
+
+        function exportPrompt() {
+            const clips = getClips()
+            if (clips.length === 0) return
+
+            // Group clips by stage
+            const byStage = {}
+            clips.forEach(clip => {
+                const key = clip.stageId || '_none'
+                if (!byStage[key]) byStage[key] = { stageId: clip.stageId, moduleTitle: clip.moduleTitle, stageTitle: clip.stageTitle, stageNum: clip.stageNum, moduleNum: clip.moduleNum, items: [] }
+                byStage[key].items.push(clip)
+            })
+
+            let prompt = `Implement the following from "${META.title || '__COURSE_TITLE_PLACEHOLDER__'}":\n\n`
+
+            Object.values(byStage).forEach(group => {
+                if (group.stageId && group.stageId !== '_none') {
+                    // Find full stage data
+                    const stage = allStages.find(s => s.id === group.stageId)
+                    prompt += `## Module ${group.moduleNum}: ${group.moduleTitle}\n`
+                    prompt += `### Stage ${group.stageNum}: ${group.stageTitle}\n`
+                    if (stage) {
+                        prompt += `**Objective:** ${stage.obj}\n\n`
+
+                        // Check if any clips are from constraints
+                        const hasConstraintClips = group.items.some(c => c.field === 'constraints')
+                        const hasVerifyClips = group.items.some(c => c.field === 'verify')
+                        const hasOtherClips = group.items.some(c => c.field !== 'constraints' && c.field !== 'verify')
+
+                        if (hasConstraintClips) {
+                            prompt += `**Constraints:**\n`
+                            group.items.filter(c => c.field === 'constraints').forEach(c => prompt += `- ${c.text}\n`)
+                            prompt += `\n`
+                        } else {
+                            // Include all constraints from stage
+                            if (stage.constraints?.length) {
+                                prompt += `**Constraints:**\n`
+                                stage.constraints.forEach(c => prompt += `- ${c}\n`)
+                                prompt += `\n`
+                            }
+                        }
+
+                        if (hasVerifyClips) {
+                            prompt += `**Done when:**\n`
+                            group.items.filter(c => c.field === 'verify').forEach(c => prompt += `- [ ] ${c.text}\n`)
+                            prompt += `\n`
+                        } else {
+                            // Include all verify from stage
+                            if (stage.verify?.length) {
+                                prompt += `**Done when:**\n`
+                                stage.verify.forEach(v => prompt += `- [ ] ${v}\n`)
+                                prompt += `\n`
+                            }
+                        }
+
+                        if (hasOtherClips) {
+                            prompt += `**Selected items:**\n`
+                            group.items.filter(c => c.field !== 'constraints' && c.field !== 'verify').forEach(c => prompt += `- ${c.text}\n`)
+                            prompt += `\n`
+                        }
+                    } else {
+                        group.items.forEach(c => prompt += `- ${c.text}\n`)
+                        prompt += `\n`
+                    }
+                } else {
+                    group.items.forEach(c => prompt += `- ${c.text}\n`)
+                    prompt += `\n`
+                }
+            })
+
+            navigator.clipboard.writeText(prompt).then(() => showToast('Prompt copied to clipboard'))
+        }
+
+        // ===== SELECTION HANDLING =====
+        const addBtn = document.getElementById('clip-add-btn')
+        let pendingSelection = null
+
+        document.getElementById('content').addEventListener('mouseup', function(e) {
+            // Small delay to let browser finalize selection
+            setTimeout(() => {
+                const sel = window.getSelection()
+                const text = sel.toString().trim()
+
+                if (!text || text.length < 3 || state.current === '__overview__') {
+                    addBtn.style.display = 'none'
+                    pendingSelection = null
+                    return
+                }
+
+                // Figure out which stage and field this is in
+                const stage = allStages.find(s => s.id === state.current)
+                if (!stage) return
+
+                // Walk up from the selection anchor to find the field
+                let field = 'other'
+                let node = sel.anchorNode
+                while (node && node !== document.getElementById('content')) {
+                    if (node.dataset && node.dataset.field) {
+                        field = node.dataset.field
+                        break
+                    }
+                    node = node.parentNode
+                }
+
+                pendingSelection = {
+                    text: text,
+                    stageId: stage.id,
+                    stageTitle: stage.title,
+                    stageNum: stage.num,
+                    moduleTitle: stage.mod.title,
+                    moduleNum: stage.mod.num,
+                    context: `M${stage.mod.num} · S${stage.num} · ${stage.title}`,
+                    field: field,
+                }
+
+                // Position the button near the selection
+                const range = sel.getRangeAt(0)
+                const rect = range.getBoundingClientRect()
+                addBtn.style.left = (rect.left + rect.width / 2 - 25) + 'px'
+                addBtn.style.top = (rect.top - 30) + 'px'
+                addBtn.style.display = 'block'
+            }, 10)
+        })
+
+        function addSelection(e) {
+            e.preventDefault()
+            e.stopPropagation()
+            if (!pendingSelection) return
+
+            const clips = getClips()
+            clips.push(pendingSelection)
+            saveClips(clips)
+
+            addBtn.style.display = 'none'
+            window.getSelection().removeAllRanges()
+            pendingSelection = null
+
+            // Auto-open clipper if closed
+            if (!state.clipperOpen) {
+                state.clipperOpen = true
+                document.getElementById('clipper').classList.remove('collapsed')
+                document.getElementById('btn-clipper').classList.add('active-toggle')
+            }
+
+            renderClips()
+            showToast('Clipped')
+        }
+
+        // Hide add button on click elsewhere
+        document.addEventListener('mousedown', function(e) {
+            if (e.target !== addBtn) {
+                addBtn.style.display = 'none'
+            }
+        })
+
+        // ===== TOAST =====
+        function showToast(msg) {
+            const toast = document.getElementById('toast')
+            toast.textContent = msg
+            toast.classList.add('visible')
+            setTimeout(() => toast.classList.remove('visible'), 1500)
+        }
+
+        // ===== KEYBOARD NAV =====
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') navigate(-1)
+            if (e.key === 'ArrowRight') navigate(1)
+        })
+
+        // ===== INIT =====
+        render()
+    </script>
+</body>
+
+</html>
